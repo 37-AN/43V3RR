@@ -1,0 +1,5 @@
+{
+  "name": "Ishtrak AI Control Plane",
+  "description": "Advanced AI orchestration dashboard for local LLM optimization, RAG management, and telemetry analysis.",
+  "requestFramePermissions": []
+}

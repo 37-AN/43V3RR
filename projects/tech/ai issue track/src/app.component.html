@@ -1,0 +1,114 @@
+
+<div class="flex h-screen w-screen bg-gray-900 text-gray-100 font-sans selection:bg-blue-500 selection:text-white">
+  
+  <!-- Sidebar -->
+  <aside class="w-64 flex-shrink-0 border-r border-gray-800 bg-gray-900 flex flex-col">
+    <!-- Header -->
+    <div class="p-6 border-b border-gray-800">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center font-bold text-lg italic">I</div>
+        <div>
+          <h1 class="font-bold text-lg tracking-tight">ISHTRAK AI</h1>
+          <p class="text-[10px] text-gray-500 uppercase tracking-widest">Control Plane</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-grow p-4 space-y-1">
+      <button (click)="activeTab.set('dashboard')" 
+        class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors duration-200"
+        [class.bg-blue-900_20]="activeTab() === 'dashboard'"
+        [class.text-blue-400]="activeTab() === 'dashboard'"
+        [class.text-gray-400]="activeTab() !== 'dashboard'"
+        [class.hover:bg-gray-800]="activeTab() !== 'dashboard'">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+        <span class="text-sm font-medium">Dashboard</span>
+      </button>
+
+      <button (click)="activeTab.set('issues')" 
+        class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors duration-200"
+        [class.bg-blue-900_20]="activeTab() === 'issues'"
+        [class.text-blue-400]="activeTab() === 'issues'"
+        [class.text-gray-400]="activeTab() !== 'issues'"
+        [class.hover:bg-gray-800]="activeTab() !== 'issues'">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+        <span class="text-sm font-medium">Issue Tracker</span>
+      </button>
+      
+      <button (click)="activeTab.set('kb')" 
+        class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors duration-200"
+        [class.bg-blue-900_20]="activeTab() === 'kb'"
+        [class.text-blue-400]="activeTab() === 'kb'"
+        [class.text-gray-400]="activeTab() !== 'kb'"
+        [class.hover:bg-gray-800]="activeTab() !== 'kb'">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+        <span class="text-sm font-medium">Knowledge Base</span>
+      </button>
+
+      <button (click)="activeTab.set('prompt')" 
+        class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors duration-200"
+        [class.bg-blue-900_20]="activeTab() === 'prompt'"
+        [class.text-blue-400]="activeTab() === 'prompt'"
+        [class.text-gray-400]="activeTab() !== 'prompt'"
+        [class.hover:bg-gray-800]="activeTab() !== 'prompt'">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+        <span class="text-sm font-medium">Prompt Lab</span>
+      </button>
+
+      <button (click)="activeTab.set('rag')" 
+        class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors duration-200"
+        [class.bg-blue-900_20]="activeTab() === 'rag'"
+        [class.text-blue-400]="activeTab() === 'rag'"
+        [class.text-gray-400]="activeTab() !== 'rag'"
+        [class.hover:bg-gray-800]="activeTab() !== 'rag'">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+        <span class="text-sm font-medium">RAG Explorer</span>
+      </button>
+
+      <button (click)="activeTab.set('eval')" 
+        class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors duration-200"
+        [class.bg-blue-900_20]="activeTab() === 'eval'"
+        [class.text-blue-400]="activeTab() === 'eval'"
+        [class.text-gray-400]="activeTab() !== 'eval'"
+        [class.hover:bg-gray-800]="activeTab() !== 'eval'">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+        <span class="text-sm font-medium">Evaluation</span>
+      </button>
+    </nav>
+
+    <!-- Footer Stats -->
+    <div class="p-4 border-t border-gray-800 bg-gray-900">
+      <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
+        <span>Ollama Core</span>
+        <span class="text-green-500">● Online</span>
+      </div>
+      <div class="h-1 w-full bg-gray-800 rounded overflow-hidden">
+        <div class="h-full bg-blue-600 w-[45%]"></div>
+      </div>
+      <div class="flex justify-between mt-1 text-[10px] text-gray-600">
+        <span>CPU Load</span>
+        <span>45%</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-grow bg-black relative">
+    <!-- Background Grid -->
+    <div class="absolute inset-0 z-0 opacity-20 pointer-events-none" 
+         style="background-image: linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px); background-size: 40px 40px;">
+    </div>
+    
+    <div class="relative z-10 h-full p-6">
+      @switch (activeTab()) {
+        @case ('dashboard') { <app-dashboard /> }
+        @case ('issues') { <app-issue-tracker /> }
+        @case ('kb') { <app-knowledge-base /> }
+        @case ('prompt') { <app-prompt-tuner /> }
+        @case ('rag') { <app-rag-explorer /> }
+        @case ('eval') { <app-evaluation /> }
+      }
+    </div>
+  </main>
+</div>

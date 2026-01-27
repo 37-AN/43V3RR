@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>43v3r FX/Crypto Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      // Global Polyfills for Node.js compatibility (process, global, Buffer)
+      window.process = { env: { NODE_ENV: 'production' } };
+      window.global = window;
+      // Simple Buffer stub if needed by deep deps (prevents crash)
+      window.Buffer = window.Buffer || {
+        isBuffer: () => false,
+        from: (s) => new TextEncoder().encode(s),
+        alloc: (n) => new Uint8Array(n)
+      };
+    </script>
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #0f172a; /* Slate 900 */
+        color: #e2e8f0; /* Slate 200 */
+      }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1e293b; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #475569; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #64748b; 
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "tslib": "https://esm.sh/tslib@2.6.2",
+    "rxjs": "https://esm.sh/rxjs@^7.8.1?conditions=es2015",
+    "rxjs/operators": "https://esm.sh/rxjs@^7.8.1/operators?conditions=es2015",
+    "rxjs/ajax": "https://esm.sh/rxjs@^7.8.1/ajax?conditions=es2015",
+    "rxjs/webSocket": "https://esm.sh/rxjs@^7.8.1/webSocket?conditions=es2015",
+    "rxjs/testing": "https://esm.sh/rxjs@^7.8.1/testing?conditions=es2015",
+    "rxjs/fetch": "https://esm.sh/rxjs@^7.8.1/fetch?conditions=es2015",
+    "@angular/compiler": "https://esm.sh/@angular/compiler@18.2.0?external=rxjs",
+    "@angular/platform-browser": "https://esm.sh/@angular/platform-browser@18.2.0?external=rxjs",
+    "@angular/forms": "https://esm.sh/@angular/forms@18.2.0?external=rxjs",
+    "@angular/core": "https://esm.sh/@angular/core@18.2.0?external=rxjs",
+    "@angular/common": "https://esm.sh/@angular/common@18.2.0?external=rxjs",
+    "@google/genai": "https://esm.sh/@google/genai@^0.2.1"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <app-root></app-root>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+name: tech_ops_agent
+purpose: Operate 43v3r Technology projects.
+skills:
+  - create_project
+  - create_task
+  - link_task_to_repo
+  - summarize_dev_progress
+  - propose_tech_stack

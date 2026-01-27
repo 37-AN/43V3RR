@@ -1,0 +1,3 @@
+limits:
+  ideas_ingest_per_minute: 30
+  auth_login_per_minute: 10

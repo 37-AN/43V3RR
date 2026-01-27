@@ -1,0 +1,7 @@
+name: records_ops_agent
+purpose: Operate 43v3r Records projects.
+skills:
+  - create_music_project
+  - tag_track_metadata
+  - propose_release_plan
+  - create_content_plan_from_track

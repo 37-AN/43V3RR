@@ -1,0 +1,26 @@
+{
+  "date": "2026-01-27",
+  "tasks": [
+    {
+      "title": "Restart docker-compose with .env loaded after image pull completes",
+      "priority": "high",
+      "tags": ["system_guardian", "infra", "stability"],
+      "hypothesis": "Initial compose run used empty env vars",
+      "suggested_steps": ["docker-compose down", "docker-compose up -d --build"]
+    },
+    {
+      "title": "Run Alembic migrations and validate DB connectivity",
+      "priority": "high",
+      "tags": ["system_guardian", "infra", "stability"],
+      "hypothesis": "Backend may fail to start without DB schema",
+      "suggested_steps": ["docker-compose exec backend alembic upgrade head"]
+    },
+    {
+      "title": "Import n8n flows and test webhook endpoints",
+      "priority": "medium",
+      "tags": ["system_guardian", "infra", "stability"],
+      "hypothesis": "No workflow heartbeats yet",
+      "suggested_steps": ["Import /workflows/n8n/*.json", "POST test payloads"]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+name: core_orchestrator
+purpose: Route instructions to specialized agents and log all decisions.
+inputs:
+  - instruction
+outputs:
+  - decision
+skills:
+  - logging_skill
+  - db_skill
+  - memory_skill
+  - workflow_skill
