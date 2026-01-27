@@ -81,6 +81,10 @@ services:
       - "8000:8000"
     volumes:
       - ./projects:/app/projects:ro
+      - ./agent-skills:/app/agent-skills:ro
+      - ./plugins:/app/plugins:ro
+      - ./config:/app/config:ro
+      - ./ai:/app/ai
     depends_on:
       postgres:
         condition: service_healthy

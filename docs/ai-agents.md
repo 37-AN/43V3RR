@@ -20,9 +20,18 @@
 - Infers metadata and updates projects/tasks/content_items
 
 Tool wiring (default):
-- core_orchestrator: enabled skills/plugins from config
-- tech_ops_agent: vercel-react-best-practices, web-design-guidelines
-- content_agent: web-design-guidelines
+- core_orchestrator: enabled skills/plugins from config/ai/skills.yaml and config/ai/plugins.yaml
+- tech_ops_agent: enabled skills/plugins that allow tech_ops_agent
+- records_ops_agent: enabled skills/plugins that allow records_ops_agent
+- content_agent: enabled skills/plugins that allow content_agent
+- daily_planner_agent: enabled skills/plugins that allow daily_planner_agent
+- revenue_agent: enabled skills/plugins that allow revenue_agent
+- system_guardian_agent: enabled skills/plugins that allow system_guardian_agent
+
+Discovery notes:
+- Skills are discovered from /agent-skills and /plugins (SKILL.md + zip bundles)
+- Plugins are discovered from /plugins (including .mcp.json metadata)
+- Disabled skills/plugins still appear in /api/ai/skills and /api/ai/plugins for inspection
 
 Example prompts:
 - "Ingest this idea and assign the correct brand"

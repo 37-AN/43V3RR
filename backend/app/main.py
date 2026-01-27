@@ -25,12 +25,17 @@ RATE_LIMITS = {
 }
 _rate_state: dict[str, dict[str, dict[str, datetime | int]]] = {}
 
+allowed_origins = [settings.frontend_url] if settings.frontend_url else []
+for fallback in ["http://localhost:3000", "http://127.0.0.1:3000"]:
+    if fallback not in allowed_origins:
+        allowed_origins.append(fallback)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.frontend_url],
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"] ,
-    allow_headers=["*"] ,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -93,6 +98,7 @@ app.include_router(ideas.router)
 app.include_router(tasks.router)
 app.include_router(logs.router)
 app.include_router(ai.router)
+app.include_router(ai.router, prefix="/api")
 app.include_router(summary.router)
 app.include_router(system.router)
 

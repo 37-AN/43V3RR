@@ -1,9 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getToken, login } from "../lib/auth";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
-  const [token, setToken] = useState<string | null>(getToken());
+  const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setToken(getToken());
+  }, []);
 
   async function handleLogin() {
     try {

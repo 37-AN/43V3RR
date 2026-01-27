@@ -1,4 +1,6 @@
 import json
+import logging
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -8,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from ..services.ai_run_service import start_ai_run, complete_ai_run
 from ..services.audit_service import write_audit_log
+from .logging_utils import append_activity
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SKILLS_ROOTS = [REPO_ROOT / "agent-skills", REPO_ROOT / "plugins"]
@@ -26,14 +29,24 @@ class SkillInfo:
     output_schema: Optional[dict]
 
 
-def _parse_frontmatter(path: Path) -> Dict[str, Any]:
-    text = path.read_text(encoding="utf-8")
+def _read_text_safe(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return ""
+
+
+def _parse_frontmatter_text(text: str) -> Dict[str, Any]:
     if not text.startswith("---"):
         return {}
     parts = text.split("---", 2)
     if len(parts) < 3:
         return {}
     return yaml.safe_load(parts[1]) or {}
+
+
+def _parse_frontmatter(path: Path) -> Dict[str, Any]:
+    return _parse_frontmatter_text(_read_text_safe(path))
 
 
 def _load_config() -> Dict[str, Dict[str, Any]]:
@@ -70,11 +83,44 @@ def discover_skills() -> List[SkillInfo]:
                     output_schema=None,
                 )
             )
+
+        for zip_path in root.rglob("*.zip"):
+            try:
+                with zipfile.ZipFile(zip_path) as archive:
+                    for member in archive.namelist():
+                        if not member.endswith("SKILL.md"):
+                            continue
+                        content = archive.read(member).decode("utf-8", errors="ignore")
+                        meta = _parse_frontmatter_text(content)
+                        name = meta.get("name") or zip_path.stem
+                        skill_id = meta.get("name") or zip_path.stem
+                        description = meta.get("description") or ""
+                        cfg = config.get(skill_id, {})
+                        enabled = bool(cfg.get("enabled", False))
+                        allowed_agents = cfg.get("allowed_agents", ["all"])
+                        skills.append(
+                            SkillInfo(
+                                skill_id=skill_id,
+                                name=name,
+                                description=description,
+                                path=f"{zip_path}::{member}",
+                                enabled=enabled,
+                                allowed_agents=allowed_agents,
+                                input_schema=None,
+                                output_schema=None,
+                            )
+                        )
+            except Exception:
+                continue
     return skills
 
 
 def list_skills() -> List[Dict[str, Any]]:
-    return [skill.__dict__ for skill in discover_skills()]
+    try:
+        return [skill.__dict__ for skill in discover_skills()]
+    except Exception as exc:
+        logging.getLogger("skill_registry").exception("skill_discovery_failed: %s", exc)
+        return []
 
 
 def get_skill(skill_id: str) -> Optional[SkillInfo]:
@@ -120,6 +166,14 @@ def call_skill(db: Session, actor_id: str, skill_id: str, **kwargs) -> Dict[str,
                 "status": "success",
             },
         )
+        append_activity(
+            {
+                "actor_id": actor_id,
+                "action": "skill_call",
+                "skill_id": skill_id,
+                "status": "success",
+            }
+        )
         return result
     except Exception as exc:
         complete_ai_run(db, run, output_summary="skill_call_failed", success=False, error_message=str(exc))
@@ -135,5 +189,13 @@ def call_skill(db: Session, actor_id: str, skill_id: str, **kwargs) -> Dict[str,
                 "status": "failure",
                 "error": str(exc),
             },
+        )
+        append_activity(
+            {
+                "actor_id": actor_id,
+                "action": "skill_call",
+                "skill_id": skill_id,
+                "status": "failure",
+            }
         )
         raise

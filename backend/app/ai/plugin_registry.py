@@ -1,3 +1,6 @@
+import json
+import logging
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -7,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from ..services.ai_run_service import start_ai_run, complete_ai_run
 from ..services.audit_service import write_audit_log
+from .logging_utils import append_activity
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PLUGINS_ROOT = REPO_ROOT / "plugins"
@@ -33,29 +37,64 @@ def _load_config() -> Dict[str, Dict[str, Any]]:
     return {entry["id"]: entry for entry in data.get("plugins", [])}
 
 
+def _read_text_safe(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return ""
+
+
+def _load_mcp(path: Path) -> Dict[str, Any]:
+    try:
+        return json.loads(_read_text_safe(path)) or {}
+    except Exception:
+        return {}
+
+
+def _extract_required_env(payload: Any) -> List[str]:
+    if isinstance(payload, dict):
+        values = []
+        for value in payload.values():
+            values.extend(_extract_required_env(value))
+        return values
+    if isinstance(payload, list):
+        values = []
+        for value in payload:
+            values.extend(_extract_required_env(value))
+        return values
+    if isinstance(payload, str):
+        return re.findall(r"\$\{([A-Z0-9_]+)\}", payload)
+    return []
+
+
 def discover_plugins() -> List[PluginInfo]:
     config = _load_config()
     plugins: List[PluginInfo] = []
 
-    for plugin_dir in (PLUGINS_ROOT / "plugins").iterdir():
-        if not plugin_dir.is_dir():
-            continue
-        cfg = config.get(plugin_dir.name, {})
-        plugins.append(
-            PluginInfo(
-                plugin_id=plugin_dir.name,
-                name=plugin_dir.name,
-                description=(plugin_dir / "README.md").read_text(encoding="utf-8")[:200]
-                if (plugin_dir / "README.md").exists()
-                else "",
-                path=str(plugin_dir),
-                kind="internal",
-                required_env=[],
-                risk_level=cfg.get("risk_level", "internal_only"),
-                enabled=bool(cfg.get("enabled", False)),
-                allowed_agents=cfg.get("allowed_agents", ["all"]),
+    internal_root = PLUGINS_ROOT / "plugins"
+    if internal_root.exists():
+        for plugin_dir in internal_root.iterdir():
+            if not plugin_dir.is_dir():
+                continue
+            cfg = config.get(plugin_dir.name, {})
+            mcp_path = plugin_dir / ".mcp.json"
+            mcp_payload = _load_mcp(mcp_path) if mcp_path.exists() else {}
+            mcp_key = next(iter(mcp_payload.keys()), plugin_dir.name)
+            mcp_config = mcp_payload.get(mcp_key, {})
+            required_env = sorted(set(_extract_required_env(mcp_payload)))
+            plugins.append(
+                PluginInfo(
+                    plugin_id=plugin_dir.name,
+                    name=mcp_key,
+                    description=_read_text_safe(plugin_dir / "README.md")[:200],
+                    path=str(plugin_dir),
+                    kind=mcp_config.get("type", "internal"),
+                    required_env=required_env,
+                    risk_level=cfg.get("risk_level", "internal_only"),
+                    enabled=bool(cfg.get("enabled", False)),
+                    allowed_agents=cfg.get("allowed_agents", ["all"]),
+                )
             )
-        )
 
     external_root = PLUGINS_ROOT / "external_plugins"
     if external_root.exists():
@@ -63,16 +102,19 @@ def discover_plugins() -> List[PluginInfo]:
             if not plugin_dir.is_dir():
                 continue
             cfg = config.get(plugin_dir.name, {})
+            mcp_path = plugin_dir / ".mcp.json"
+            mcp_payload = _load_mcp(mcp_path) if mcp_path.exists() else {}
+            mcp_key = next(iter(mcp_payload.keys()), plugin_dir.name)
+            mcp_config = mcp_payload.get(mcp_key, {})
+            required_env = sorted(set(_extract_required_env(mcp_payload)))
             plugins.append(
                 PluginInfo(
                     plugin_id=plugin_dir.name,
-                    name=plugin_dir.name,
-                    description=(plugin_dir / "README.md").read_text(encoding="utf-8")[:200]
-                    if (plugin_dir / "README.md").exists()
-                    else "",
+                    name=mcp_key,
+                    description=_read_text_safe(plugin_dir / "README.md")[:200],
                     path=str(plugin_dir),
-                    kind="external",
-                    required_env=[],
+                    kind=mcp_config.get("type", "external"),
+                    required_env=required_env,
                     risk_level=cfg.get("risk_level", "external_network"),
                     enabled=bool(cfg.get("enabled", False)),
                     allowed_agents=cfg.get("allowed_agents", ["all"]),
@@ -83,7 +125,11 @@ def discover_plugins() -> List[PluginInfo]:
 
 
 def list_plugins() -> List[Dict[str, Any]]:
-    return [plugin.__dict__ for plugin in discover_plugins()]
+    try:
+        return [plugin.__dict__ for plugin in discover_plugins()]
+    except Exception as exc:
+        logging.getLogger("plugin_registry").exception("plugin_discovery_failed: %s", exc)
+        return []
 
 
 def get_plugin(plugin_id: str) -> Optional[PluginInfo]:
@@ -129,6 +175,14 @@ def call_plugin(db: Session, actor_id: str, plugin_id: str, **kwargs) -> Dict[st
                 "status": "success",
             },
         )
+        append_activity(
+            {
+                "actor_id": actor_id,
+                "action": "plugin_call",
+                "plugin_id": plugin_id,
+                "status": "success",
+            }
+        )
         return result
     except Exception as exc:
         complete_ai_run(db, run, output_summary="plugin_call_failed", success=False, error_message=str(exc))
@@ -144,5 +198,13 @@ def call_plugin(db: Session, actor_id: str, plugin_id: str, **kwargs) -> Dict[st
                 "status": "failure",
                 "error": str(exc),
             },
+        )
+        append_activity(
+            {
+                "actor_id": actor_id,
+                "action": "plugin_call",
+                "plugin_id": plugin_id,
+                "status": "failure",
+            }
         )
         raise
