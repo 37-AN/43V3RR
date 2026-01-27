@@ -19,6 +19,11 @@
 - Scans /projects for tech and records work
 - Infers metadata and updates projects/tasks/content_items
 
+Tool wiring (default):
+- core_orchestrator: enabled skills/plugins from config
+- tech_ops_agent: vercel-react-best-practices, web-design-guidelines
+- content_agent: web-design-guidelines
+
 Example prompts:
 - "Ingest this idea and assign the correct brand"
 - "Plan my day using tasks and audit_log"

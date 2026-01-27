@@ -1,0 +1,15 @@
+# Skills registry configuration
+# - id: unique skill id (prefer frontmatter name, fallback to path)
+# - enabled: true/false
+# - allowed_agents: ["all"] or list of agent names
+# - max_frequency: optional hint per minute
+skills:
+  - id: "vercel-react-best-practices"
+    enabled: true
+    allowed_agents: ["tech_ops_agent", "content_agent", "core_orchestrator"]
+  - id: "web-design-guidelines"
+    enabled: true
+    allowed_agents: ["content_agent", "tech_ops_agent"]
+  - id: "vercel-deploy"
+    enabled: false
+    allowed_agents: ["tech_ops_agent"]

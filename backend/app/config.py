@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -21,9 +21,7 @@ class Settings(BaseSettings):
     fs_sync_root: str = "/app/projects"
     fs_sync_interval_minutes: int = 15
 
-    class Config:
-        env_prefix = ""
-        case_sensitive = False
+    model_config = SettingsConfigDict(env_prefix="", case_sensitive=False)
 
 
 settings = Settings()

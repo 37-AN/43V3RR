@@ -4,6 +4,8 @@ from ..database import get_db
 from ..services.audit_service import write_audit_log
 from ..auth.deps import require_admin
 from ..models import AIRun
+from ..ai.skill_registry import list_skills
+from ..ai.plugin_registry import list_plugins
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 
@@ -25,3 +27,13 @@ def daily_summary(db: Session = Depends(get_db), user=Depends(require_admin)):
         details={},
     )
     return {"status": "queued", "note": "Use content_agent in future. Stubbed for now."}
+
+
+@router.get("/skills")
+def get_skills(user=Depends(require_admin)):
+    return list_skills()
+
+
+@router.get("/plugins")
+def get_plugins(user=Depends(require_admin)):
+    return list_plugins()

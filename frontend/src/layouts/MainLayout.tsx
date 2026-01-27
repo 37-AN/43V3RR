@@ -35,6 +35,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           <a href="/ideas">Ideas</a>
           <a href="/logs">Logs</a>
           <a href="/ai">AI</a>
+          <a href="/ai/tools">AI Tools</a>
         </nav>
       </header>
       <main>{children}</main>

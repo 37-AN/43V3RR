@@ -6,6 +6,7 @@ from langgraph.graph import StateGraph
 from ..services.ai_run_service import start_ai_run, complete_ai_run
 from ..services.audit_service import write_audit_log
 from .ollama_client import generate
+from .tooling import build_toolset
 
 
 @dataclass
@@ -67,6 +68,7 @@ def ingest_idea(db: Session, content: str, source: str) -> OrchestratorDecision:
     run = start_ai_run(db, agent_name="core_orchestrator", input_summary=content[:200])
     graph = _build_graph()
     try:
+        toolset = build_toolset("core_orchestrator")
         result = graph.invoke({"content": content})
         decision: OrchestratorDecision = result["decision"]
         complete_ai_run(
@@ -86,6 +88,7 @@ def ingest_idea(db: Session, content: str, source: str) -> OrchestratorDecision:
                 "source": source,
                 "item_type": decision.item_type,
                 "priority": decision.priority,
+                "tools": {"skills": len(toolset["skills"]), "plugins": len(toolset["plugins"])},
             },
         )
         return decision

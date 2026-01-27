@@ -1,0 +1,18 @@
+# Plugins registry configuration
+# - id: plugin id (directory name)
+# - enabled: true/false
+# - allowed_agents: ["all"] or list
+# - risk_level: internal_only | external_network | sensitive_data
+plugins:
+  - id: "hookify"
+    enabled: true
+    allowed_agents: ["system_guardian_agent", "core_orchestrator"]
+    risk_level: "internal_only"
+  - id: "example-plugin"
+    enabled: false
+    allowed_agents: ["all"]
+    risk_level: "internal_only"
+  - id: "stripe"
+    enabled: false
+    allowed_agents: ["revenue_agent"]
+    risk_level: "external_network"
