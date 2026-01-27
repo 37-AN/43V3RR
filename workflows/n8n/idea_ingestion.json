@@ -1,0 +1,68 @@
+{
+  "name": "idea_ingestion",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "ideas/ingested",
+        "httpMethod": "POST",
+        "responseMode": "onReceived"
+      },
+      "id": "webhook_idea",
+      "name": "Webhook Idea Ingested",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/system/workflow_event",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{\"workflow_name\":\"idea_ingestion\",\"status\":\"success\",\"source\":\"n8n\",\"payload\":{{$json}}}"
+      },
+      "id": "log_event",
+      "name": "Log Workflow Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson",
+        "responseCode": 200
+      },
+      "id": "respond_ok",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [700, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Idea Ingested": {
+      "main": [
+        [
+          {
+            "node": "Log Workflow Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Workflow Event": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}

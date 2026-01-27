@@ -1,0 +1,59 @@
+{
+  "id": null,
+  "title": "43v3r Technology Ops",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "API Latency (p95)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(api_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p95"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "API Error Rate (4xx/5xx)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(api_requests_total{status_code=~\"4..|5..\"}[5m]))",
+          "legendFormat": "errors"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "AI Runs (Tech Agents)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(ai_runs_total{agent=~\"core_orchestrator|tech_ops_agent|system_guardian_agent\"}[5m])) by (agent)",
+          "legendFormat": "{{agent}}"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }
+    },
+    {
+      "type": "table",
+      "title": "Open Tasks (Tech)",
+      "datasource": "Postgres-43V3RR",
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "select t.status, count(*) as count from tasks t join brands b on b.id = t.brand_id where b.slug = '43v3r_technology' group by t.status order by count desc;",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }
+    }
+  ]
+}

@@ -18,3 +18,11 @@ Filesystem sync:
 - Trigger: Scheduled background job + POST /system/run_filesystem_sync
 - Inputs: /projects/tech and /projects/records folders
 - Outputs: projects/tasks/content_items updates + audit_log
+
+n8n flows (auto-sync):
+- idea_ingestion: webhook -> workflow_event log
+- filesystem_sync_scheduler: cron -> /system/run_filesystem_sync
+- daily_plan_summary: cron -> /ai/daily_plan
+- revenue_scan_weekly: cron -> /ai/revenue_scan
+- system_health_check: cron -> /ai/system_health
+- records_content_pipeline: webhook -> create tasks + workflow_event log

@@ -1,0 +1,71 @@
+{
+  "id": null,
+  "title": "43v3r System Health",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "CPU Usage",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+          "legendFormat": "cpu %"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Memory Usage",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+          "legendFormat": "mem %"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "AI Runs (All Agents)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(ai_runs_total[5m])) by (agent)",
+          "legendFormat": "{{agent}}"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Workflow Failures (All)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(workflows_failed_total[5m])) by (workflow_name)",
+          "legendFormat": "{{workflow_name}}"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }
+    },
+    {
+      "type": "table",
+      "title": "Open Tasks (All Brands)",
+      "datasource": "Postgres-43V3RR",
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "select b.slug as brand, t.status, count(*) as count from tasks t join brands b on b.id = t.brand_id group by b.slug, t.status order by count desc;",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 16, "w": 24, "h": 8 }
+    }
+  ]
+}

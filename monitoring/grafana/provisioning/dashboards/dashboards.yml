@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: "43v3r-dashboards"
+    orgId: 1
+    folder: "43v3r"
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards

@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     vector_db_port: int
 
     n8n_base_url: str
+    n8n_url: str | None = None
+    n8n_api_key: str | None = None
     ollama_host: str
     ollama_model: str = "llama3"
 

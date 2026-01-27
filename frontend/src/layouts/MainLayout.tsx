@@ -40,6 +40,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           <a href="/logs">Logs</a>
           <a href="/ai">AI</a>
           <a href="/ai/tools">AI Tools</a>
+          <a href="/observability">Observability</a>
         </nav>
       </header>
       <main>{children}</main>

@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from datetime import datetime
 from ..models import AIRun
+from ..metrics import record_ai_run
 
 
 def start_ai_run(db: Session, agent_name: str, input_summary: str, metadata: dict | None = None) -> AIRun:
@@ -27,4 +28,8 @@ def complete_ai_run(
     db.add(run)
     db.commit()
     db.refresh(run)
+    duration = None
+    if run.started_at and run.completed_at:
+        duration = (run.completed_at - run.started_at).total_seconds()
+    record_ai_run(run.agent_name, "success" if success else "failure", duration)
     return run

@@ -1,0 +1,60 @@
+{
+  "id": null,
+  "title": "43v3r Records Ops",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "AI Runs (Records/Content Agents)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(ai_runs_total{agent=~\"records_ops_agent|content_agent|daily_planner_agent\"}[5m])) by (agent)",
+          "legendFormat": "{{agent}}"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "type": "table",
+      "title": "Content Items by Status (Records)",
+      "datasource": "Postgres-43V3RR",
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "select c.status, count(*) as count from content_items c join brands b on b.id = c.brand_id where b.slug = '43v3r_records' group by c.status;",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "type": "table",
+      "title": "Projects by Stage (Records)",
+      "datasource": "Postgres-43V3RR",
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "select p.status as stage, count(*) as count from projects p join brands b on b.id = p.brand_id where b.slug = '43v3r_records' group by p.status;",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Workflow Failures (Records)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(workflows_failed_total{workflow_name=~\"records_.*\"}[5m]))",
+          "legendFormat": "records workflows"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }
+    }
+  ]
+}

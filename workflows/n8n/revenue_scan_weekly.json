@@ -1,0 +1,58 @@
+{
+  "name": "revenue_scan_weekly",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyWeek",
+              "weekday": "MON",
+              "hour": 9,
+              "minute": 0
+            }
+          ]
+        }
+      },
+      "id": "cron_revenue",
+      "name": "Cron Revenue Scan",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/ai/revenue_scan",
+        "method": "POST",
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ${BACKEND_ADMIN_TOKEN}"
+            }
+          ]
+        }
+      },
+      "id": "http_revenue",
+      "name": "Request Revenue Scan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 300]
+    }
+  ],
+  "connections": {
+    "Cron Revenue Scan": {
+      "main": [
+        [
+          {
+            "node": "Request Revenue Scan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}

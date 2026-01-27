@@ -1,0 +1,57 @@
+{
+  "name": "filesystem_sync_scheduler",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 6,
+              "unit": "hours"
+            }
+          ]
+        }
+      },
+      "id": "cron_sync",
+      "name": "Cron Sync",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/system/run_filesystem_sync",
+        "method": "POST",
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ${BACKEND_ADMIN_TOKEN}"
+            }
+          ]
+        }
+      },
+      "id": "http_sync",
+      "name": "Trigger Filesystem Sync",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 300]
+    }
+  ],
+  "connections": {
+    "Cron Sync": {
+      "main": [
+        [
+          {
+            "node": "Trigger Filesystem Sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}

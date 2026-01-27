@@ -1,0 +1,57 @@
+{
+  "name": "daily_plan_summary",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyDay",
+              "hour": 7,
+              "minute": 0
+            }
+          ]
+        }
+      },
+      "id": "cron_daily_plan",
+      "name": "Cron Daily Plan",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/ai/daily_plan",
+        "method": "POST",
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ${BACKEND_ADMIN_TOKEN}"
+            }
+          ]
+        }
+      },
+      "id": "http_daily_plan",
+      "name": "Request Daily Plan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 300]
+    }
+  ],
+  "connections": {
+    "Cron Daily Plan": {
+      "main": [
+        [
+          {
+            "node": "Request Daily Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}

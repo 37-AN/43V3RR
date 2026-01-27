@@ -1,0 +1,137 @@
+{
+  "name": "records_content_pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "records/content",
+        "httpMethod": "POST",
+        "responseMode": "onReceived"
+      },
+      "id": "webhook_records",
+      "name": "Webhook Records Content",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/tasks/",
+        "method": "POST",
+        "jsonParameters": true,
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ${BACKEND_ADMIN_TOKEN}"
+            }
+          ]
+        },
+        "bodyParametersJson": "{\"brand_id\":2,\"title\":\"Design cover art\",\"description\":\"Auto-generated from records content pipeline\",\"status\":\"open\",\"priority\":\"medium\",\"source\":\"workflow\",\"created_by\":\"agent\",\"assigned_to\":\"human\",\"metadata\":{\"workflow\":\"records_content_pipeline\"}}"
+      },
+      "id": "task_cover",
+      "name": "Create Cover Task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [470, 220]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/tasks/",
+        "method": "POST",
+        "jsonParameters": true,
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "Bearer ${BACKEND_ADMIN_TOKEN}"
+            }
+          ]
+        },
+        "bodyParametersJson": "{\"brand_id\":2,\"title\":\"Schedule IG reel\",\"description\":\"Auto-generated from records content pipeline\",\"status\":\"open\",\"priority\":\"medium\",\"source\":\"workflow\",\"created_by\":\"agent\",\"assigned_to\":\"human\",\"metadata\":{\"workflow\":\"records_content_pipeline\"}}"
+      },
+      "id": "task_reel",
+      "name": "Create Reel Task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [470, 380]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8000/system/workflow_event",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{\"workflow_name\":\"records_content_pipeline\",\"status\":\"success\",\"source\":\"n8n\",\"payload\":{{$json}}}"
+      },
+      "id": "log_event",
+      "name": "Log Workflow Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [720, 300]
+    },
+    {
+      "parameters": {
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson",
+        "responseCode": 200
+      },
+      "id": "respond_ok",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [950, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Records Content": {
+      "main": [
+        [
+          {
+            "node": "Create Cover Task",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create Reel Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Cover Task": {
+      "main": [
+        [
+          {
+            "node": "Log Workflow Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Reel Task": {
+      "main": [
+        [
+          {
+            "node": "Log Workflow Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Workflow Event": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}
