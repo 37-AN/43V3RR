@@ -9,7 +9,7 @@ def start_ai_run(db: Session, agent_name: str, input_summary: str, metadata: dic
         input_summary=input_summary,
         success=True,
         started_at=datetime.utcnow(),
-        metadata=metadata or {},
+        meta=metadata or {},
     )
     db.add(run)
     db.commit()

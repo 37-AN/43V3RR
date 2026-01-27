@@ -129,8 +129,8 @@ def _detect_changes(current: Dict[str, Dict[str, Any]], snapshot: Dict[str, Any]
 def _find_project_by_path(db: Session, filesystem_path: str) -> Project | None:
     projects = db.query(Project).all()
     for project in projects:
-        metadata = project.metadata or {}
-        if metadata.get("filesystem_path") == filesystem_path:
+        meta = project.meta or {}
+        if meta.get("filesystem_path") == filesystem_path:
             return project
     return None
 
@@ -155,7 +155,7 @@ def _ensure_task(db: Session, project_id: int, brand_id: int, task_payload: Dict
         source="filesystem_sync",
         created_by="agent",
         assigned_to="human",
-        metadata=task_payload.get("metadata", {}),
+        meta=task_payload.get("meta", task_payload.get("metadata", {})),
     )
     db.add(task)
     db.commit()
@@ -178,7 +178,7 @@ def _ensure_content_item(db: Session, brand_id: int, project: Project, item_payl
         type=item_payload.get("type", "post"),
         status=item_payload.get("status", "idea"),
         source="filesystem_sync",
-        metadata={"project_id": project.id},
+        meta={"project_id": project.id},
     )
     db.add(item)
     db.commit()
@@ -218,7 +218,7 @@ def run_filesystem_sync(db: Session, root_override: str | None = None) -> Dict[s
             continue
 
         project = _find_project_by_path(db, descriptor["path"])
-        metadata = {
+        meta = {
             "filesystem_path": descriptor["path"],
             "tags": summary.tags,
             "last_scan_time": datetime.utcnow().isoformat(),
@@ -236,7 +236,7 @@ def run_filesystem_sync(db: Session, root_override: str | None = None) -> Dict[s
                 type=summary.type,
                 status=summary.status,
                 priority="medium",
-                metadata=metadata,
+                meta=meta,
             )
             db.add(project)
             db.commit()
@@ -268,7 +268,7 @@ def run_filesystem_sync(db: Session, root_override: str | None = None) -> Dict[s
         else:
             project.type = summary.type
             project.status = summary.status
-            project.metadata = metadata
+            project.meta = meta
             db.add(project)
             db.commit()
             db.refresh(project)

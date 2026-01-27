@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional, Dict, Any
 from .common import BaseSchema
@@ -15,7 +15,9 @@ class TaskCreate(BaseModel):
     due_date: Optional[datetime] = None
     created_by: str = "human"
     assigned_to: str = "human"
-    metadata: Dict[str, Any] = {}
+    meta: Dict[str, Any] = Field(default_factory=dict, alias="metadata")
+
+    model_config = {"populate_by_name": True}
 
 
 class TaskRead(BaseSchema):
@@ -29,4 +31,6 @@ class TaskRead(BaseSchema):
     due_date: Optional[datetime] = None
     created_by: str
     assigned_to: str
-    metadata: Dict[str, Any]
+    meta: Dict[str, Any] = Field(default_factory=dict, alias="metadata")
+
+    model_config = {"populate_by_name": True}

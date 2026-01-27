@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import ProgrammingError, OperationalError
 from .config import settings
 from .database import SessionLocal
 from .logging.json_logger import get_logger
@@ -71,12 +72,18 @@ async def request_logger(request: Request, call_next):
 def startup_seed():
     db: Session = SessionLocal()
     try:
-        ensure_brands(db)
-        existing = db.query(User).count()
-        if not existing:
-            user = User(username="admin", hashed_password=hash_password("admin"), role="admin")
-            db.add(user)
-            db.commit()
+        try:
+            ensure_brands(db)
+            existing = db.query(User).count()
+            if not existing:
+                user = User(username="admin", hashed_password=hash_password("admin"), role="admin")
+                db.add(user)
+                db.commit()
+        except (ProgrammingError, OperationalError) as exc:
+            logger.info(
+                "startup_seed_skipped",
+                extra={"extra": {"reason": "db_not_ready", "error": str(exc)}},
+            )
     finally:
         db.close()
 

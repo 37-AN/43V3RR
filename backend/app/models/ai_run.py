@@ -12,4 +12,4 @@ class AIRun(BaseModel):
     error_message = Column(Text)
     started_at = Column(DateTime(timezone=True))
     completed_at = Column(DateTime(timezone=True))
-    metadata = Column(JSON, default=dict)
+    meta = Column(JSON, default=dict)

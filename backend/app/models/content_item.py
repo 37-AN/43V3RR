@@ -13,6 +13,6 @@ class ContentItem(BaseModel):
     source = Column(String, nullable=False)
     scheduled_at = Column(DateTime(timezone=True))
     published_at = Column(DateTime(timezone=True))
-    metadata = Column(JSON, default=dict)
+    meta = Column(JSON, default=dict)
 
     brand = relationship("Brand")

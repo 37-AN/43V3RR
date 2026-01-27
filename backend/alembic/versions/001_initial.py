@@ -31,7 +31,7 @@ def upgrade():
         sa.Column("type", sa.String, nullable=False),
         sa.Column("status", sa.String, nullable=False),
         sa.Column("priority", sa.String, nullable=False),
-        sa.Column("metadata", sa.JSON, default=dict),
+        sa.Column("meta", sa.JSON, default=dict),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True)),
     )
@@ -48,7 +48,7 @@ def upgrade():
         sa.Column("due_date", sa.DateTime(timezone=True)),
         sa.Column("created_by", sa.String, nullable=False),
         sa.Column("assigned_to", sa.String, nullable=False),
-        sa.Column("metadata", sa.JSON, default=dict),
+        sa.Column("meta", sa.JSON, default=dict),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True)),
     )
@@ -72,7 +72,7 @@ def upgrade():
         sa.Column("error_message", sa.Text),
         sa.Column("started_at", sa.DateTime(timezone=True)),
         sa.Column("completed_at", sa.DateTime(timezone=True)),
-        sa.Column("metadata", sa.JSON, default=dict),
+        sa.Column("meta", sa.JSON, default=dict),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True)),
     )
@@ -98,7 +98,7 @@ def upgrade():
         sa.Column("source", sa.String, nullable=False),
         sa.Column("scheduled_at", sa.DateTime(timezone=True)),
         sa.Column("published_at", sa.DateTime(timezone=True)),
-        sa.Column("metadata", sa.JSON, default=dict),
+        sa.Column("meta", sa.JSON, default=dict),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True)),
     )

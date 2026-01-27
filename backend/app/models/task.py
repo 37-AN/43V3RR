@@ -16,7 +16,7 @@ class Task(BaseModel):
     due_date = Column(DateTime(timezone=True))
     created_by = Column(String, nullable=False)
     assigned_to = Column(String, nullable=False)
-    metadata = Column(JSON, default=dict)
+    meta = Column(JSON, default=dict)
 
     brand = relationship("Brand")
     project = relationship("Project")

@@ -11,6 +11,6 @@ class Project(BaseModel):
     type = Column(String, nullable=False)
     status = Column(String, nullable=False)
     priority = Column(String, nullable=False)
-    metadata = Column(JSON, default=dict)
+    meta = Column(JSON, default=dict)
 
     brand = relationship("Brand")
