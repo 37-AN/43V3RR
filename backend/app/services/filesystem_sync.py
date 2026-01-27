@@ -17,7 +17,7 @@ from ..ai.filesystem_sync_agent import interpret_change, ProjectSummary
 
 SNAPSHOT_PATH = Path("/app/logs/filesystem_snapshot.json")
 ALLOWED_ROOT = Path(settings.fs_sync_root).resolve()
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 PROJECTS_OVERVIEW = REPO_ROOT / "ai" / "memory" / "systems" / "projects_overview.md"
 
 

@@ -12,7 +12,7 @@ from ..services.ai_run_service import start_ai_run, complete_ai_run
 from ..services.audit_service import write_audit_log
 from .logging_utils import append_activity
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 SKILLS_ROOTS = [REPO_ROOT / "agent-skills", REPO_ROOT / "plugins"]
 CONFIG_PATH = REPO_ROOT / "config" / "ai" / "skills.yaml"
 
@@ -60,6 +60,16 @@ def discover_skills() -> List[SkillInfo]:
     config = _load_config()
     skills: List[SkillInfo] = []
 
+    def _score_path(path: str) -> int:
+        score = 0
+        if ".zip::" in path:
+            score -= 5
+        if "__MACOSX" in path:
+            score -= 100
+        if "/skills/skills/" in path:
+            score -= 2
+        return score
+
     for root in SKILLS_ROOTS:
         if not root.exists():
             continue
@@ -90,6 +100,8 @@ def discover_skills() -> List[SkillInfo]:
                     for member in archive.namelist():
                         if not member.endswith("SKILL.md"):
                             continue
+                        if "__MACOSX" in member:
+                            continue
                         content = archive.read(member).decode("utf-8", errors="ignore")
                         meta = _parse_frontmatter_text(content)
                         name = meta.get("name") or zip_path.stem
@@ -112,7 +124,15 @@ def discover_skills() -> List[SkillInfo]:
                         )
             except Exception:
                 continue
-    return skills
+    deduped: dict[str, SkillInfo] = {}
+    for skill in skills:
+        existing = deduped.get(skill.skill_id)
+        if existing is None:
+            deduped[skill.skill_id] = skill
+            continue
+        if _score_path(skill.path) > _score_path(existing.path):
+            deduped[skill.skill_id] = skill
+    return list(deduped.values())
 
 
 def list_skills() -> List[Dict[str, Any]]:

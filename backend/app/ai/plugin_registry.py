@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -12,7 +13,7 @@ from ..services.ai_run_service import start_ai_run, complete_ai_run
 from ..services.audit_service import write_audit_log
 from .logging_utils import append_activity
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 PLUGINS_ROOT = REPO_ROOT / "plugins"
 CONFIG_PATH = REPO_ROOT / "config" / "ai" / "plugins.yaml"
 
@@ -71,6 +72,14 @@ def discover_plugins() -> List[PluginInfo]:
     config = _load_config()
     plugins: List[PluginInfo] = []
 
+    def _score_path(path: str) -> int:
+        score = 0
+        if "__MACOSX" in path:
+            score -= 100
+        if "/plugins/plugins/" in path:
+            score += 1
+        return score
+
     internal_root = PLUGINS_ROOT / "plugins"
     if internal_root.exists():
         for plugin_dir in internal_root.iterdir():
@@ -121,7 +130,15 @@ def discover_plugins() -> List[PluginInfo]:
                 )
             )
 
-    return plugins
+    deduped: dict[str, PluginInfo] = {}
+    for plugin in plugins:
+        existing = deduped.get(plugin.plugin_id)
+        if existing is None:
+            deduped[plugin.plugin_id] = plugin
+            continue
+        if _score_path(plugin.path) > _score_path(existing.path):
+            deduped[plugin.plugin_id] = plugin
+    return list(deduped.values())
 
 
 def list_plugins() -> List[Dict[str, Any]]:
@@ -155,6 +172,9 @@ def call_plugin(db: Session, actor_id: str, plugin_id: str, **kwargs) -> Dict[st
         plugin = get_plugin(plugin_id)
         if not plugin or not plugin.enabled:
             raise RuntimeError("Plugin not enabled or not found")
+        missing_env = [key for key in plugin.required_env if not os.getenv(key)]
+        if missing_env:
+            raise RuntimeError(f"Missing required env vars: {', '.join(missing_env)}")
 
         # TODO: wire actual plugin execution based on metadata.
         result = {
@@ -173,6 +193,7 @@ def call_plugin(db: Session, actor_id: str, plugin_id: str, **kwargs) -> Dict[st
             details={
                 "input": _redact(kwargs),
                 "status": "success",
+                "required_env": plugin.required_env,
             },
         )
         append_activity(
@@ -197,6 +218,7 @@ def call_plugin(db: Session, actor_id: str, plugin_id: str, **kwargs) -> Dict[st
                 "input": _redact(kwargs),
                 "status": "failure",
                 "error": str(exc),
+                "required_env": plugin.required_env if plugin else [],
             },
         )
         append_activity(
