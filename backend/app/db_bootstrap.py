@@ -99,6 +99,16 @@ SCHEMA_SQL = [
         updated_at TIMESTAMPTZ
     );
     """,
+    """
+    CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username TEXT NOT NULL UNIQUE,
+        hashed_password TEXT NOT NULL,
+        role TEXT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ
+    );
+    """,
 ]
 
 
@@ -113,6 +123,8 @@ def create_schema_if_needed(engine: Engine) -> None:
         connection.execute(text("ALTER TABLE content_items ADD COLUMN IF NOT EXISTS meta JSONB DEFAULT '{}'::jsonb;"))
         connection.execute(text("ALTER TABLE ai_runs ADD COLUMN IF NOT EXISTS meta JSONB DEFAULT '{}'::jsonb;"))
         connection.execute(text("ALTER TABLE audit_log ADD COLUMN IF NOT EXISTS details JSONB DEFAULT '{}'::jsonb;"))
+        connection.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS hashed_password TEXT;"))
+        connection.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT;"))
 
         connection.execute(
             text(

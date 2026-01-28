@@ -9,7 +9,7 @@ export default function Tasks() {
 
   useEffect(() => {
     const token = getToken() || undefined;
-    apiGet("/tasks", token)
+    apiGet("/tasks/", token)
       .then(setTasks)
       .catch((err) => setError(err.message));
   }, []);
@@ -18,7 +18,7 @@ export default function Tasks() {
     try {
       const token = getToken() || undefined;
       const created = await apiPost(
-        "/tasks",
+        "/tasks/",
         {
           brand_id: 1,
           title: "Sample Task",

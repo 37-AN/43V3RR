@@ -9,6 +9,7 @@ from ..ai.skill_registry import list_skills
 from ..ai.plugin_registry import list_plugins
 from ..services.ai_run_service import start_ai_run, complete_ai_run
 from ..metrics import SYSTEM_HEALTH_STATUS
+from ..services.health_service import evaluate_system_health
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 
@@ -79,9 +80,10 @@ def revenue_scan(db: Session = Depends(get_db), user=Depends(require_admin)):
 @router.post("/system_health")
 def system_health(db: Session = Depends(get_db), user=Depends(require_admin)):
     run = start_ai_run(db, agent_name="system_guardian_agent", input_summary="system_health")
-    result = {"status": "green", "timestamp": datetime.utcnow().isoformat()}
-    complete_ai_run(db, run, output_summary="system_health_stub")
-    SYSTEM_HEALTH_STATUS.labels(scope="global").set(0)
+    result = evaluate_system_health(db)
+    complete_ai_run(db, run, output_summary=f"system_health_{result['status']}")
+    status_map = {"green": 0, "yellow": 1, "red": 2}
+    SYSTEM_HEALTH_STATUS.labels(scope="global").set(status_map.get(result["status"], 1))
     write_audit_log(
         db,
         actor_type="agent",

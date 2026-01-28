@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, AliasChoices
 from datetime import datetime
 from typing import Dict, Any
 from .common import BaseSchema
@@ -12,6 +12,6 @@ class AIRunRead(BaseSchema):
     error_message: str | None = None
     started_at: datetime | None = None
     completed_at: datetime | None = None
-    meta: Dict[str, Any] = Field(default_factory=dict, alias="metadata")
+    meta: Dict[str, Any] = Field(default_factory=dict, validation_alias=AliasChoices("meta", "metadata"))
 
     model_config = {"populate_by_name": True}

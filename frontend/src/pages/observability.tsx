@@ -6,10 +6,12 @@ import { getToken } from "../lib/auth";
 export default function Observability() {
   const [summary, setSummary] = useState<any | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [brands, setBrands] = useState<any | null>(null);
 
   useEffect(() => {
     const token = getToken() || undefined;
     apiGet("/system/observability_summary", token).then(setSummary).catch(() => null);
+    apiGet("/system/brand_summary", token).then(setBrands).catch(() => null);
   }, []);
 
   async function syncWorkflows() {
@@ -50,6 +52,12 @@ export default function Observability() {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+      {brands && (
+        <div className="card" style={{ marginTop: 16 }}>
+          <h3>Brand Summary</h3>
+          <pre style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(brands, null, 2)}</pre>
         </div>
       )}
     </MainLayout>

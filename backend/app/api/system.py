@@ -9,6 +9,8 @@ from ..services.n8n_sync import sync_n8n_workflows
 from ..services.audit_service import write_audit_log
 from ..metrics import record_workflow_event
 from ..models import AIRun, AuditLog
+from ..services.summary_service import brand_summary
+from ..services.mock_data_service import seed_mock_data
 
 router = APIRouter(prefix="/system", tags=["system"])
 
@@ -18,6 +20,17 @@ class WorkflowEvent(BaseModel):
     status: str
     source: str = "n8n"
     payload: dict = {}
+
+
+class MockSeedRequest(BaseModel):
+    seed_label: str = "mock"
+    projects_per_brand: int = 6
+    tasks_per_project: int = 5
+    ideas_per_brand: int = 3
+    content_items_per_brand: int = 4
+    ai_runs: int = 12
+    workflow_events: int = 8
+    force: bool = False
 
 
 @router.post("/run_filesystem_sync")
@@ -87,3 +100,13 @@ def observability_summary(db: Session = Depends(get_db), user=Depends(require_ad
         "ai_runs": ai_counts,
         "workflows": workflow_counts,
     }
+
+
+@router.get("/brand_summary")
+def get_brand_summary(db: Session = Depends(get_db), user=Depends(require_admin)):
+    return brand_summary(db)
+
+
+@router.post("/seed_mock_data")
+def seed_mock(payload: MockSeedRequest, db: Session = Depends(get_db), user=Depends(require_admin)):
+    return seed_mock_data(db, **payload.model_dump())
