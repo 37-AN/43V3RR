@@ -59,7 +59,12 @@ def seed_mock_data(
     workflow_events: int = 8,
     force: bool = False,
 ) -> dict[str, Any]:
-    existing = db.query(Task).filter(Task.meta["seed"].astext == seed_label).first()
+    seed_field = Task.meta["seed"]
+    try:
+        seed_field = seed_field.as_string()
+    except AttributeError:
+        seed_field = seed_field
+    existing = db.query(Task).filter(seed_field == seed_label).first()
     if existing and not force:
         return {"status": "skipped", "reason": "seed_exists"}
 
