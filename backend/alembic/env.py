@@ -2,17 +2,13 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 from app.config import settings
-from app.database import Base
+from app.database import Base, _normalize_db_url
 from app import models
 
 config = context.config
 fileConfig(config.config_file_name)
 
-config.set_main_option(
-    "sqlalchemy.url",
-    f"postgresql+psycopg2://{settings.postgres_user}:{settings.postgres_password}"
-    f"@{settings.postgres_host}:{settings.postgres_port}/{settings.postgres_db}",
-)
+config.set_main_option("sqlalchemy.url", _normalize_db_url(settings.database_url))
 
 target_metadata = Base.metadata
 

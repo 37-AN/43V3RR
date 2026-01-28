@@ -57,7 +57,7 @@
     },
     {
       "parameters": {
-        "url": "http://backend:8000/system/workflow_event",
+        "url": "http://backend:8000/api/system/workflow_event",
         "method": "POST",
         "jsonParameters": true,
         "bodyParametersJson": "{\"workflow_name\":\"records_content_pipeline\",\"status\":\"success\",\"source\":\"n8n\",\"payload\":{{$json}}}"

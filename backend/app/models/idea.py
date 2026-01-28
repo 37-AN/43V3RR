@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, JSON
 from sqlalchemy.orm import relationship
 from .base import BaseModel
 
@@ -10,5 +10,6 @@ class Idea(BaseModel):
     content = Column(Text, nullable=False)
     source = Column(String, nullable=False)
     status = Column(String, nullable=False)
+    meta = Column(JSON, default=dict)
 
     brand = relationship("Brand")

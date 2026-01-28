@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Dict, Any
 from .common import BaseSchema
 
@@ -13,3 +13,6 @@ class IdeaRead(BaseSchema):
     content: str
     source: str
     status: str
+    meta: Dict[str, Any] = Field(default_factory=dict, alias="metadata")
+
+    model_config = {"populate_by_name": True}

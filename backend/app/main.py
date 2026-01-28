@@ -7,14 +7,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import ProgrammingError, OperationalError
 from .config import settings
-from .database import SessionLocal
+from .database import SessionLocal, engine
 from .logging.json_logger import get_logger
 from .metrics import record_request, render_metrics, METRICS_CONTENT_TYPE
 from .services.brand_service import ensure_brands
 from .auth.security import hash_password
 from .models import User
-from .api import ideas, tasks, logs, ai, summary, auth, system
+from .api import ideas, tasks, logs, ai, summary, auth, system, health
 from .services.filesystem_sync import run_filesystem_sync
+from .db_bootstrap import create_schema_if_needed
 
 logger = get_logger("api")
 
@@ -83,6 +84,7 @@ def startup_seed():
     db: Session = SessionLocal()
     try:
         try:
+            create_schema_if_needed(engine)
             ensure_brands(db)
             existing = db.query(User).count()
             if not existing:
@@ -106,6 +108,8 @@ app.include_router(ai.router)
 app.include_router(ai.router, prefix="/api")
 app.include_router(summary.router)
 app.include_router(system.router)
+app.include_router(system.router, prefix="/api")
+app.include_router(health.router)
 
 
 @app.on_event("startup")

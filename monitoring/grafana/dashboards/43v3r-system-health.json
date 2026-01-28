@@ -8,64 +8,51 @@
   "panels": [
     {
       "type": "timeseries",
-      "title": "CPU Usage",
-      "datasource": "Prometheus",
+      "title": "AI Run Errors (1h)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
-          "legendFormat": "cpu %"
+          "expr": "sum by (agent) (increase(ai_runs_total{status=\"error\"}[1h]))",
+          "legendFormat": "{{agent}}"
         }
       ],
       "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
     },
     {
       "type": "timeseries",
-      "title": "Memory Usage",
-      "datasource": "Prometheus",
+      "title": "Workflows Failed (1h)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
-          "legendFormat": "mem %"
+          "expr": "sum by (workflow_name) (increase(workflows_failed_total[1h]))",
+          "legendFormat": "{{workflow_name}}"
         }
       ],
       "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
     },
     {
-      "type": "timeseries",
-      "title": "AI Runs (All Agents)",
-      "datasource": "Prometheus",
+      "type": "stat",
+      "title": "System Health Status",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum(rate(ai_runs_total[5m])) by (agent)",
-          "legendFormat": "{{agent}}"
+          "expr": "system_health_status{scope=\"global\"}",
+          "legendFormat": "status"
         }
       ],
-      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }
+      "gridPos": { "x": 0, "y": 8, "w": 6, "h": 6 }
     },
     {
       "type": "timeseries",
-      "title": "Workflow Failures (All)",
-      "datasource": "Prometheus",
+      "title": "Backend Error Rate",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "expr": "sum(rate(workflows_failed_total[5m])) by (workflow_name)",
-          "legendFormat": "{{workflow_name}}"
+          "expr": "(sum(rate(http_requests_total{status_code=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m])))",
+          "legendFormat": "error_rate"
         }
       ],
-      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }
-    },
-    {
-      "type": "table",
-      "title": "Open Tasks (All Brands)",
-      "datasource": "Postgres-43V3RR",
-      "targets": [
-        {
-          "format": "table",
-          "rawSql": "select b.slug as brand, t.status, count(*) as count from tasks t join brands b on b.id = t.brand_id group by b.slug, t.status order by count desc;",
-          "refId": "A"
-        }
-      ],
-      "gridPos": { "x": 0, "y": 16, "w": 24, "h": 8 }
+      "gridPos": { "x": 6, "y": 8, "w": 18, "h": 6 }
     }
   ]
 }

@@ -21,7 +21,7 @@
     },
     {
       "parameters": {
-        "url": "http://backend:8000/ai/daily_plan",
+        "url": "http://backend:8000/api/ai/daily_plan",
         "method": "POST",
         "headerParametersUi": {
           "parameter": [

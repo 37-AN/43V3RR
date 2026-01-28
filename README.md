@@ -5,7 +5,7 @@ Local-first AI operating system for a solo founder running two brands: **43v3r T
 ## Tech stack
 - Backend API: Python + FastAPI
 - Frontend dashboard: TypeScript + Next.js
-- Database: Postgres (docker-compose)
+- Database: Supabase (managed Postgres)
 - Vector DB: Qdrant (docker-compose)
 - Orchestration: n8n (docker-compose)
 - Local LLM: Ollama
@@ -13,7 +13,7 @@ Local-first AI operating system for a solo founder running two brands: **43v3r T
 
 ## High-level architecture
 - **Frontend** calls **Backend API**.
-- **Backend** writes to **Postgres** and **audit_log**, triggers **n8n** workflows, and records **ai_runs**.
+- **Backend** writes to **Supabase Postgres** and **audit_log**, triggers **n8n** workflows, and records **ai_runs**.
 - **Ollama** provides local model inference (wired via config; rule-based fallback in code).
 - **Qdrant** reserved for future embeddings and memory indexing.
 
@@ -30,10 +30,13 @@ cp .env.example .env
 docker-compose up -d --build
 ```
 
-3) Run DB migrations (first time)
+3) Run DB migrations (first time, against Supabase)
 ```
 docker-compose exec backend alembic upgrade head
 ```
+
+Backend bootstrap:
+- Tables are auto-created on startup if missing (idempotent).
 
 4) Open apps
 - Backend: http://localhost:8000
@@ -43,6 +46,15 @@ docker-compose exec backend alembic upgrade head
 Default dev login:
 - username: admin
 - password: admin
+
+## Supabase setup
+1) Create a Supabase project.
+2) Copy the database connection string.
+3) Set `SUPABASE_DB_URL` (or `DATABASE_URL`) in `.env`.
+4) Run migrations via `docker-compose exec backend alembic upgrade head`.
+
+Supabase CLI (via Docker):
+- Run: `docker-compose run --rm supabase-cli <command>`
 
 ## Assumptions
 - This is a local-first system; all integrations are optional and pluggable.

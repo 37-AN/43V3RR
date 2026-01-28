@@ -7,53 +7,80 @@
   "refresh": "30s",
   "panels": [
     {
-      "type": "timeseries",
-      "title": "API Latency (p95)",
-      "datasource": "Prometheus",
+      "type": "table",
+      "title": "Open Tasks by Status (Tech)",
+      "datasource": { "type": "postgres", "uid": "supabase" },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(api_request_duration_seconds_bucket[5m])) by (le))",
-          "legendFormat": "p95"
+          "format": "table",
+          "rawSql": "SELECT\n  t.status,\n  COUNT(*) AS count\nFROM tasks t\nJOIN brands b ON t.brand_id = b.id\nWHERE b.slug = 'tech'\n  AND t.status IN ('todo', 'in_progress', 'blocked')\nGROUP BY t.status\nORDER BY count DESC;",
+          "refId": "A"
         }
       ],
       "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
     },
     {
       "type": "timeseries",
-      "title": "API Error Rate (4xx/5xx)",
-      "datasource": "Prometheus",
+      "title": "Tasks Created vs Completed (30d, Tech)",
+      "datasource": { "type": "postgres", "uid": "supabase" },
       "targets": [
         {
-          "expr": "sum(rate(api_requests_total{status_code=~\"4..|5..\"}[5m]))",
-          "legendFormat": "errors"
+          "format": "time_series",
+          "rawSql": "WITH created AS (\n  SELECT\n    date_trunc('day', created_at) AS day,\n    COUNT(*) AS created_count\n  FROM tasks t\n  JOIN brands b ON t.brand_id = b.id\n  WHERE b.slug = 'tech'\n    AND created_at >= now() - interval '30 days'\n  GROUP BY day\n),\ncompleted AS (\n  SELECT\n    date_trunc('day', updated_at) AS day,\n    COUNT(*) AS completed_count\n  FROM tasks t\n  JOIN brands b ON t.brand_id = b.id\n  WHERE b.slug = 'tech'\n    AND t.status = 'done'\n    AND updated_at >= now() - interval '30 days'\n  GROUP BY day\n)\nSELECT\n  COALESCE(c.day, d.day) AS time,\n  COALESCE(created_count, 0) AS created,\n  COALESCE(completed_count, 0) AS completed\nFROM created c\nFULL OUTER JOIN completed d ON c.day = d.day\nORDER BY time;",
+          "refId": "A"
         }
       ],
       "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
     },
     {
-      "type": "timeseries",
-      "title": "AI Runs (Tech Agents)",
-      "datasource": "Prometheus",
+      "type": "table",
+      "title": "Tech Projects by Stage",
+      "datasource": { "type": "postgres", "uid": "supabase" },
       "targets": [
         {
-          "expr": "sum(rate(ai_runs_total{agent=~\"core_orchestrator|tech_ops_agent|system_guardian_agent\"}[5m])) by (agent)",
-          "legendFormat": "{{agent}}"
+          "format": "table",
+          "rawSql": "SELECT\n  p.stage,\n  COUNT(*) AS count\nFROM projects p\nJOIN brands b ON p.brand_id = b.id\nWHERE b.slug = 'tech'\nGROUP BY p.stage\nORDER BY count DESC;",
+          "refId": "A"
         }
       ],
       "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }
     },
     {
-      "type": "table",
-      "title": "Open Tasks (Tech)",
-      "datasource": "Postgres-43V3RR",
+      "type": "timeseries",
+      "title": "AI Runs by Agent (Tech, 24h)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
-          "format": "table",
-          "rawSql": "select t.status, count(*) as count from tasks t join brands b on b.id = t.brand_id where b.slug = '43v3r_technology' group by t.status order by count desc;",
-          "refId": "A"
+          "expr": "sum by (agent) (increase(ai_runs_total{agent=~\"tech_ops_agent|daily_planner_agent|revenue_agent\"}[24h]))",
+          "legendFormat": "{{agent}}"
         }
       ],
       "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Backend API Error Rate",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "(sum(rate(http_requests_total{status_code=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m])))",
+          "legendFormat": "error_rate"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 }
+    },
+    {
+      "type": "table",
+      "title": "Tech Revenue Opportunity Tasks",
+      "datasource": { "type": "postgres", "uid": "supabase" },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT\n  t.id,\n  t.title,\n  t.status,\n  t.priority,\n  t.due_date,\n  t.created_at\nFROM tasks t\nJOIN brands b ON t.brand_id = b.id\nWHERE b.slug = 'tech'\n  AND (t.meta->>'tag') = 'revenue_opportunity'\nORDER BY t.priority DESC, t.due_date NULLS LAST;",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 }
     }
   ]
 }

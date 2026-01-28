@@ -19,14 +19,14 @@ class OrchestratorDecision:
 def _rule_based_decision(content: str) -> OrchestratorDecision:
     lowered = content.lower()
     if any(word in lowered for word in ["track", "beat", "song", "mix", "master", "release"]):
-        return OrchestratorDecision("43v3r_records", "idea", "medium")
-    return OrchestratorDecision("43v3r_technology", "idea", "medium")
+        return OrchestratorDecision("records", "idea", "medium")
+    return OrchestratorDecision("tech", "idea", "medium")
 
 
 def _ollama_decision(content: str) -> Optional[OrchestratorDecision]:
     prompt = (
         "You are a routing agent. Return JSON only with keys: brand_slug, item_type, priority. "
-        "brand_slug must be 43v3r_technology or 43v3r_records. "
+        "brand_slug must be tech or records. "
         "item_type must be idea, task, or project. "
         "priority must be low, medium, or high.\n\n"
         f"Input: {content}\n"
@@ -42,7 +42,7 @@ def _ollama_decision(content: str) -> Optional[OrchestratorDecision]:
             return None
         data = json.loads(raw[start : end + 1])
         return OrchestratorDecision(
-            brand_slug=data.get("brand_slug", "43v3r_technology"),
+            brand_slug=data.get("brand_slug", "tech"),
             item_type=data.get("item_type", "idea"),
             priority=data.get("priority", "medium"),
         )

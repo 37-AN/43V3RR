@@ -1,21 +1,20 @@
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Optional
 
 from prometheus_client import Counter, Gauge, Histogram, generate_latest, CONTENT_TYPE_LATEST
 from sqlalchemy.orm import Session
 
-from .models import Task, Project, Brand
+from .models import Task, Project, Brand, ContentItem
 
-API_REQUESTS_TOTAL = Counter(
-    "api_requests_total",
-    "Total API requests",
+HTTP_REQUESTS_TOTAL = Counter(
+    "http_requests_total",
+    "Total HTTP requests",
     ["method", "path", "status_code"],
 )
-API_REQUEST_DURATION = Histogram(
-    "api_request_duration_seconds",
-    "API request latency",
+HTTP_REQUEST_DURATION = Histogram(
+    "http_request_duration_seconds",
+    "HTTP request latency",
     ["method", "path"],
 )
 
@@ -51,11 +50,22 @@ PROJECTS_BY_BRAND_AND_STAGE = Gauge(
     "Projects by brand and stage",
     ["brand", "stage"],
 )
+CONTENT_ITEMS_BY_BRAND_AND_STATUS = Gauge(
+    "content_items_by_brand_and_status",
+    "Content items by brand and status",
+    ["brand", "status"],
+)
+
+SYSTEM_HEALTH_STATUS = Gauge(
+    "system_health_status",
+    "System health status (0=green,1=yellow,2=red)",
+    ["scope"],
+)
 
 
 def record_request(method: str, path: str, status_code: int, duration_seconds: float) -> None:
-    API_REQUESTS_TOTAL.labels(method=method, path=path, status_code=str(status_code)).inc()
-    API_REQUEST_DURATION.labels(method=method, path=path).observe(duration_seconds)
+    HTTP_REQUESTS_TOTAL.labels(method=method, path=path, status_code=str(status_code)).inc()
+    HTTP_REQUEST_DURATION.labels(method=method, path=path).observe(duration_seconds)
 
 
 def record_ai_run(agent: str, status: str, duration_seconds: Optional[float]) -> None:
@@ -81,19 +91,34 @@ def update_db_gauges(db: Session) -> None:
         counts: dict[str, int] = {}
         for (status,) in tasks:
             counts[status] = counts.get(status, 0) + 1
+        total = sum(counts.values())
+        TASKS_OPEN_BY_BRAND.labels(brand=brand.slug, status="all").set(total)
         for status, count in counts.items():
             TASKS_OPEN_BY_BRAND.labels(brand=brand.slug, status=status).set(count)
 
         projects = (
-            db.query(Project.status)
+            db.query(Project.stage)
             .filter(Project.brand_id == brand.id)
             .all()
         )
         project_counts: dict[str, int] = {}
         for (stage,) in projects:
-            project_counts[stage] = project_counts.get(stage, 0) + 1
+            label = stage or "unknown"
+            project_counts[label] = project_counts.get(label, 0) + 1
         for stage, count in project_counts.items():
             PROJECTS_BY_BRAND_AND_STAGE.labels(brand=brand.slug, stage=stage).set(count)
+
+    content_rows = (
+        db.query(Brand.slug, ContentItem.status)
+        .join(ContentItem, ContentItem.brand_id == Brand.id)
+        .all()
+    )
+    content_counts: dict[tuple[str, str], int] = {}
+    for brand_slug, status in content_rows:
+        key = (brand_slug, status)
+        content_counts[key] = content_counts.get(key, 0) + 1
+    for (brand_slug, status), count in content_counts.items():
+        CONTENT_ITEMS_BY_BRAND_AND_STATUS.labels(brand=brand_slug, status=status).set(count)
 
 
 def render_metrics(db: Optional[Session] = None) -> bytes:

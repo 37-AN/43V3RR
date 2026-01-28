@@ -7,54 +7,93 @@
   "refresh": "30s",
   "panels": [
     {
-      "type": "timeseries",
-      "title": "AI Runs (Records/Content Agents)",
-      "datasource": "Prometheus",
+      "type": "table",
+      "title": "Tracks by Stage (Records)",
+      "datasource": { "type": "postgres", "uid": "supabase" },
       "targets": [
         {
-          "expr": "sum(rate(ai_runs_total{agent=~\"records_ops_agent|content_agent|daily_planner_agent\"}[5m])) by (agent)",
-          "legendFormat": "{{agent}}"
+          "format": "table",
+          "rawSql": "SELECT\n  p.stage,\n  COUNT(*) AS count\nFROM projects p\nJOIN brands b ON p.brand_id = b.id\nWHERE b.slug = 'records'\nGROUP BY p.stage\nORDER BY count DESC;",
+          "refId": "A"
         }
       ],
       "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
     },
     {
       "type": "table",
-      "title": "Content Items by Status (Records)",
-      "datasource": "Postgres-43V3RR",
+      "title": "Tracks Ready for Release This Week (Records)",
+      "datasource": { "type": "postgres", "uid": "supabase" },
       "targets": [
         {
           "format": "table",
-          "rawSql": "select c.status, count(*) as count from content_items c join brands b on b.id = c.brand_id where b.slug = '43v3r_records' group by c.status;",
+          "rawSql": "SELECT\n  p.id,\n  p.name AS track_name,\n  (p.meta->>'bpm')::int AS bpm,\n  p.stage,\n  (p.meta->>'genre') AS genre,\n  (p.meta->>'mood') AS mood,\n  (p.meta->>'target_release_date')::date AS target_release_date\nFROM projects p\nJOIN brands b ON p.brand_id = b.id\nWHERE b.slug = 'records'\n  AND p.stage = 'ready_for_release'\n  AND (p.meta->>'target_release_date')::date\n      BETWEEN date_trunc('week', now())::date\n          AND (date_trunc('week', now())::date + interval '6 days');",
           "refId": "A"
         }
       ],
       "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
     },
     {
-      "type": "table",
-      "title": "Projects by Stage (Records)",
-      "datasource": "Postgres-43V3RR",
+      "type": "timeseries",
+      "title": "Release Funnel Over Time",
+      "datasource": { "type": "postgres", "uid": "supabase" },
       "targets": [
         {
-          "format": "table",
-          "rawSql": "select p.status as stage, count(*) as count from projects p join brands b on b.id = p.brand_id where b.slug = '43v3r_records' group by p.status;",
+          "format": "time_series",
+          "rawSql": "SELECT\n  date_trunc('week', p.updated_at) AS time,\n  p.stage,\n  COUNT(*) AS count\nFROM projects p\nJOIN brands b ON p.brand_id = b.id\nWHERE b.slug = 'records'\n  AND p.updated_at >= now() - interval '90 days'\nGROUP BY time, p.stage\nORDER BY time, p.stage;",
           "refId": "A"
         }
       ],
       "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }
     },
     {
-      "type": "timeseries",
-      "title": "Workflow Failures (Records)",
-      "datasource": "Prometheus",
+      "type": "table",
+      "title": "Content Items by Status (Records)",
+      "datasource": { "type": "postgres", "uid": "supabase" },
       "targets": [
         {
-          "expr": "sum(rate(workflows_failed_total{workflow_name=~\"records_.*\"}[5m]))",
-          "legendFormat": "records workflows"
+          "format": "table",
+          "rawSql": "SELECT\n  status,\n  COUNT(*) AS count\nFROM content_items ci\nJOIN brands b ON ci.brand_id = b.id\nWHERE b.slug = 'records'\nGROUP BY status\nORDER BY count DESC;",
+          "refId": "A"
         }
       ],
       "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }
+    },
+    {
+      "type": "table",
+      "title": "Scheduled Posts Next 7 Days (Records)",
+      "datasource": { "type": "postgres", "uid": "supabase" },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT\n  ci.id,\n  ci.title,\n  ci.type,\n  ci.status,\n  ci.scheduled_at\nFROM content_items ci\nJOIN brands b ON ci.brand_id = b.id\nWHERE b.slug = 'records'\n  AND ci.status = 'scheduled'\n  AND ci.scheduled_at >= now()\n  AND ci.scheduled_at < now() + interval '7 days'\nORDER BY ci.scheduled_at;",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "AI Usage for Records Agents",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum by (agent) (increase(ai_runs_total{agent=~\"records_ops_agent|content_agent\"}[24h]))",
+          "legendFormat": "{{agent}}"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Records Content Workflow Runs",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "increase(workflows_triggered_total{workflow_name=\"records_content_pipeline\"}[1h])",
+          "legendFormat": "runs"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 24, "w": 24, "h": 6 }
     }
   ]
 }

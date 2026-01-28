@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from datetime import datetime, timedelta
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -27,7 +27,19 @@ def run_sync(db: Session = Depends(get_db), user=Depends(require_admin)):
 
 @router.post("/sync_n8n_workflows")
 def sync_workflows(db: Session = Depends(get_db), user=Depends(require_admin)):
-    return sync_n8n_workflows(db)
+    result = sync_n8n_workflows(db)
+    if result.get("status") == "skipped":
+        write_audit_log(
+            db,
+            actor_type="system",
+            actor_id="n8n_sync",
+            action="workflow_sync_skipped",
+            entity_type="workflow",
+            entity_id="all",
+            details=result,
+        )
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="n8n api disabled")
+    return result
 
 
 @router.post("/workflow_event")

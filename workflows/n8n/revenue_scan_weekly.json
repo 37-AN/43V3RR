@@ -22,7 +22,7 @@
     },
     {
       "parameters": {
-        "url": "http://backend:8000/ai/revenue_scan",
+        "url": "http://backend:8000/api/ai/revenue_scan",
         "method": "POST",
         "headerParametersUi": {
           "parameter": [

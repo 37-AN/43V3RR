@@ -7,12 +7,12 @@ def get_brand_by_slug(db: Session, slug: str) -> Brand | None:
 
 
 def ensure_brands(db: Session):
-    existing = db.query(Brand).count()
-    if existing:
-        return
-    brands = [
-        Brand(name="43v3r Technology", slug="43v3r_technology"),
-        Brand(name="43v3r Records", slug="43v3r_records"),
+    desired = [
+        ("43v3r Technology", "tech"),
+        ("43v3r Records", "records"),
     ]
-    db.add_all(brands)
+    for name, slug in desired:
+        exists = db.query(Brand).filter(Brand.slug == slug).first()
+        if not exists:
+            db.add(Brand(name=name, slug=slug))
     db.commit()

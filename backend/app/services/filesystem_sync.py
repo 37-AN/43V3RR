@@ -212,7 +212,7 @@ def run_filesystem_sync(db: Session, root_override: str | None = None) -> Dict[s
 
         result = interpret_change(descriptor, change_type)
         summary: ProjectSummary = result["project_summary"]
-        brand_slug = "43v3r_technology" if summary.brand == "tech" else "43v3r_records"
+        brand_slug = "tech" if summary.brand == "tech" else "records"
         brand = get_brand_by_slug(db, brand_slug)
         if not brand:
             continue
@@ -234,6 +234,7 @@ def run_filesystem_sync(db: Session, root_override: str | None = None) -> Dict[s
                 brand_id=brand.id,
                 name=summary.name,
                 type=summary.type,
+                stage=summary.status,
                 status=summary.status,
                 priority="medium",
                 meta=meta,
@@ -267,6 +268,7 @@ def run_filesystem_sync(db: Session, root_override: str | None = None) -> Dict[s
                 )
         else:
             project.type = summary.type
+            project.stage = summary.status
             project.status = summary.status
             project.meta = meta
             db.add(project)

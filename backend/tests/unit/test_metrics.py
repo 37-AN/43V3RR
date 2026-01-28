@@ -5,7 +5,7 @@ from app.services.n8n_sync import _load_workflows
 def test_metrics_render_contains_api_metrics():
     record_request("GET", "/health", 200, 0.01)
     payload = render_metrics()
-    assert b"api_requests_total" in payload
+    assert b"http_requests_total" in payload
 
 
 def test_metrics_render_contains_workflow_metrics():
@@ -23,8 +23,5 @@ def test_n8n_sync_requires_env(monkeypatch):
     from app.services import n8n_sync
     monkeypatch.setattr(n8n_sync.settings, "n8n_url", None)
     monkeypatch.setattr(n8n_sync.settings, "n8n_api_key", None)
-    try:
-        n8n_sync.sync_n8n_workflows(None)
-        assert False, "Expected RuntimeError when N8N env missing"
-    except RuntimeError:
-        assert True
+    result = n8n_sync.sync_n8n_workflows(None)
+    assert result["status"] == "skipped"

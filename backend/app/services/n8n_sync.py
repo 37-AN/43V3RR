@@ -31,7 +31,7 @@ def _load_workflows() -> List[Dict[str, Any]]:
 
 def sync_n8n_workflows(db: Session) -> Dict[str, Any]:
     if not settings.n8n_url or not settings.n8n_api_key:
-        raise RuntimeError("N8N_URL or N8N_API_KEY missing")
+        return {"status": "skipped", "reason": "n8n_api_disabled"}
 
     run = start_ai_run(db, agent_name="system", input_summary="sync_n8n_workflows")
     workflows = _load_workflows()
@@ -49,6 +49,7 @@ def sync_n8n_workflows(db: Session) -> Dict[str, Any]:
         for workflow in workflows:
             name = workflow["name"]
             payload = {k: v for k, v in workflow.items() if k not in ["id", "_filename"]}
+            payload["active"] = True
             if name in existing_by_name:
                 wf_id = existing_by_name[name]["id"]
                 resp = client.put(f"{base_url}/api/v1/workflows/{wf_id}", headers=headers, json=payload)

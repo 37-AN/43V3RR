@@ -1,0 +1,184 @@
+apiVersion: 1
+
+groups:
+  - name: system-alerts
+    interval: 1m
+    rules:
+      - uid: ai-errors-spike
+        title: AI Errors Spike
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            model:
+              expr: sum(increase(ai_runs_total{status="error"}[5m]))
+              interval: ""
+              refId: A
+          - refId: B
+            datasourceUid: prometheus
+            model:
+              expr: 5
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [0]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [A]
+                  reducer:
+                    type: last
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              refId: C
+        for: 5m
+        annotations:
+          summary: AI errors are spiking (>5 in last 5 minutes)
+          description: Check logs, ai_runs table, and system_guardian_agent output.
+        labels:
+          severity: warning
+          scope: global
+
+      - uid: tech-backlog-overload
+        title: Tech Workload Overload
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            model:
+              expr: tasks_open_by_brand{brand="tech",status="all"}
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [50]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [A]
+                  reducer:
+                    type: last
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              refId: C
+        for: 5m
+        annotations:
+          summary: Tech tasks backlog > 50
+          description: Consider pruning, delegating, or automating tasks.
+        labels:
+          severity: warning
+          brand: tech
+
+      - uid: system-health-red
+        title: System Health RED
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            model:
+              expr: system_health_status{scope="global"} == 2
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [1]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [A]
+                  reducer:
+                    type: last
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              refId: C
+        for: 5m
+        annotations:
+          summary: System health is RED for more than 5 minutes
+          description: Open 43v3r-system-health dashboard and check System Guardian.
+        labels:
+          severity: critical
+
+      - uid: records-content-pipeline-failing
+        title: Records Content Pipeline Failing
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            model:
+              expr: increase(workflows_failed_total{workflow_name="records_content_pipeline"}[10m])
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [0]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [A]
+                  reducer:
+                    type: last
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              refId: C
+        for: 1m
+        annotations:
+          summary: Records content workflow had failures in last 10 minutes
+          description: Check n8n logs and /api/system/workflow_event entries.
+        labels:
+          severity: warning
+          workflow: records_content_pipeline
+
+      - uid: backend-error-rate
+        title: Backend Error Rate > 5%
+        condition: C
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            model:
+              expr: (sum(rate(http_requests_total{status_code=~"5.."}[5m])) / sum(rate(http_requests_total[5m])))
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [0.05]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [A]
+                  reducer:
+                    type: last
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              refId: C
+        for: 5m
+        annotations:
+          summary: Backend error rate over 5% in last 5 minutes
+          description: Investigate recent deploy, DB connectivity, or AI service health.
+        labels:
+          severity: critical

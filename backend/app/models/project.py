@@ -9,6 +9,7 @@ class Project(BaseModel):
     brand_id = Column(Integer, ForeignKey("brands.id"), nullable=False)
     name = Column(String, nullable=False)
     type = Column(String, nullable=False)
+    stage = Column(String, nullable=True)
     status = Column(String, nullable=False)
     priority = Column(String, nullable=False)
     meta = Column(JSON, default=dict)

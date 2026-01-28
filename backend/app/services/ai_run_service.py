@@ -31,5 +31,5 @@ def complete_ai_run(
     duration = None
     if run.started_at and run.completed_at:
         duration = (run.completed_at - run.started_at).total_seconds()
-    record_ai_run(run.agent_name, "success" if success else "failure", duration)
+    record_ai_run(run.agent_name, "success" if success else "error", duration)
     return run

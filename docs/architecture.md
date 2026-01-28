@@ -3,7 +3,7 @@
 Components:
 - Backend (FastAPI): API, AI orchestration, logging
 - Frontend (Next.js): dashboards for tasks, ideas, logs, AI runs
-- Postgres: source of truth for tasks, ideas, logs
+- Supabase Postgres: source of truth for tasks, ideas, logs (managed externally)
 - Qdrant: vector database placeholder
 - n8n: workflow automation
 - Ollama: local LLM runtime
@@ -16,6 +16,11 @@ Flow:
 3. Backend writes idea + audit_log.
 4. Optional n8n workflows can react to changes.
 5. Prometheus scrapes backend and exporters; Grafana visualizes brand/system metrics.
+6. Database monitoring is handled via Supabase-managed tooling (no local Postgres exporter).
+
+Supabase bootstrap:
+- Backend runs an idempotent schema bootstrap on startup to ensure required tables exist.
+- Alembic migrations remain available for explicit schema upgrades.
 
 Filesystem sync:
 - Background scanner reads /projects/tech and /projects/records.

@@ -26,3 +26,7 @@ n8n flows (auto-sync):
 - revenue_scan_weekly: cron -> /ai/revenue_scan
 - system_health_check: cron -> /ai/system_health
 - records_content_pipeline: webhook -> create tasks + workflow_event log
+
+API paths:
+- Sync/workflow events are available under /api/system as well as /system.
+- AI triggers are available under /api/ai as well as /ai.
