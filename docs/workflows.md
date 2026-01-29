@@ -13,6 +13,8 @@
 n8n:
 - Import JSON flows from /workflows/n8n
 - Extend with webhooks for notifications or publishing
+Mock data:
+- POST /api/system/seed_mock_data (admin) for dashboards smoke testing
 
 Filesystem sync:
 - Trigger: Scheduled background job + POST /system/run_filesystem_sync

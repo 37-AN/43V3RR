@@ -42,6 +42,7 @@ Backend bootstrap:
 - Backend: http://localhost:8000
 - Frontend: http://localhost:3000
 - n8n: http://localhost:5678
+- Grafana: http://localhost:3001
 
 Default dev login:
 - username: admin
@@ -55,6 +56,9 @@ Default dev login:
 
 Supabase CLI (via Docker):
 - Run: `docker-compose run --rm supabase-cli <command>`
+
+Dashboard smoke test:
+- Seed mock data: POST /api/system/seed_mock_data (admin only)
 
 ## Assumptions
 - This is a local-first system; all integrations are optional and pluggable.

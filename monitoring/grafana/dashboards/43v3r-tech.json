@@ -1,5 +1,6 @@
 {
   "id": null,
+  "uid": "43v3r-tech-ops",
   "title": "43v3r Technology Ops",
   "timezone": "browser",
   "schemaVersion": 38,
@@ -26,7 +27,7 @@
       "targets": [
         {
           "format": "time_series",
-          "rawSql": "WITH created AS (\n  SELECT\n    date_trunc('day', created_at) AS day,\n    COUNT(*) AS created_count\n  FROM tasks t\n  JOIN brands b ON t.brand_id = b.id\n  WHERE b.slug = 'tech'\n    AND created_at >= now() - interval '30 days'\n  GROUP BY day\n),\ncompleted AS (\n  SELECT\n    date_trunc('day', updated_at) AS day,\n    COUNT(*) AS completed_count\n  FROM tasks t\n  JOIN brands b ON t.brand_id = b.id\n  WHERE b.slug = 'tech'\n    AND t.status = 'done'\n    AND updated_at >= now() - interval '30 days'\n  GROUP BY day\n)\nSELECT\n  COALESCE(c.day, d.day) AS time,\n  COALESCE(created_count, 0) AS created,\n  COALESCE(completed_count, 0) AS completed\nFROM created c\nFULL OUTER JOIN completed d ON c.day = d.day\nORDER BY time;",
+          "rawSql": "WITH created AS (\n  SELECT\n    date_trunc('day', t.created_at) AS day,\n    COUNT(*) AS created_count\n  FROM tasks t\n  JOIN brands b ON t.brand_id = b.id\n  WHERE b.slug = 'tech'\n    AND t.created_at >= now() - interval '30 days'\n  GROUP BY day\n),\ncompleted AS (\n  SELECT\n    date_trunc('day', t.updated_at) AS day,\n    COUNT(*) AS completed_count\n  FROM tasks t\n  JOIN brands b ON t.brand_id = b.id\n  WHERE b.slug = 'tech'\n    AND t.status = 'done'\n    AND t.updated_at >= now() - interval '30 days'\n  GROUP BY day\n)\nSELECT\n  COALESCE(c.day, d.day) AS time,\n  COALESCE(created_count, 0) AS created,\n  COALESCE(completed_count, 0) AS completed\nFROM created c\nFULL OUTER JOIN completed d ON c.day = d.day\nORDER BY time;",
           "refId": "A"
         }
       ],

@@ -5,3 +5,4 @@
 - API inspection: GET /ai/skills and GET /ai/plugins (admin only)
 - Logging: skill_call/plugin_call recorded in ai_runs + audit_log, plus JSONL activity log
 - Safety: external plugins disabled by default; required env vars validated for plugin calls
+- Admin utilities: /api/system/seed_mock_data for dashboard smoke testing

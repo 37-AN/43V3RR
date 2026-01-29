@@ -1,5 +1,11 @@
 apiVersion: 1
 
+deleteDatasources:
+  - name: Supabase-43V3RR
+    uid: supabase
+
+prune: true
+
 datasources:
   - name: Prometheus
     uid: prometheus
@@ -18,6 +24,7 @@ datasources:
     secureJsonData:
       password: ${SUPABASE_DB_PASSWORD}
     jsonData:
-      sslmode: "require"
+      database: ${SUPABASE_DB_NAME}
+      sslmode: "disable"
       postgresVersion: 1500
       timescaledb: false
